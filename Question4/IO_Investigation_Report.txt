@@ -1,0 +1,275 @@
+==================================================
+QUESTION 4 - FILE ACCESS AND I/O INVESTIGATION
+==================================================
+
+$ lsof | head -n 15
+COMMAND    PID  TID TASKCMD         USER   FD      TYPE             DEVICE  SIZE/OFF    NODE NAME
+bash         1                      root  cwd   unknown                                      /proc/1/cwd (readlink: Permission denied)
+bash         1                      root  rtd   unknown                                      /proc/1/root (readlink: Permission denied)
+bash         1                      root  txt   unknown                                      /proc/1/exe (readlink: Permission denied)
+bash         1                      root NOFD                                                /proc/1/fd (opendir: Permission denied)
+rsyslogd     9                    syslog  cwd   unknown                                      /proc/9/cwd (readlink: Permission denied)
+rsyslogd     9                    syslog  rtd   unknown                                      /proc/9/root (readlink: Permission denied)
+rsyslogd     9                    syslog  txt   unknown                                      /proc/9/exe (readlink: Permission denied)
+rsyslogd     9                    syslog NOFD                                                /proc/9/fd (opendir: Permission denied)
+rsyslogd     9   10 in:imuxso     syslog  cwd   unknown                                      /proc/9/task/10/cwd (readlink: Permission denied)
+rsyslogd     9   10 in:imuxso     syslog  rtd   unknown                                      /proc/9/task/10/root (readlink: Permission denied)
+rsyslogd     9   10 in:imuxso     syslog  txt   unknown                                      /proc/9/task/10/exe (readlink: Permission denied)
+rsyslogd     9   10 in:imuxso     syslog NOFD                                                /proc/9/task/10/fd (opendir: Permission denied)
+rsyslogd     9   11 in:imklog     syslog  cwd   unknown                                      /proc/9/task/11/cwd (readlink: Permission denied)
+rsyslogd     9   11 in:imklog     syslog  rtd   unknown                                      /proc/9/task/11/root (readlink: Permission denied)
+Explanation: lsof lists open files held by running processes (command, PID, file descriptor, path) - used to find which 
+  files an app holds open.
+
+
+$ ls -l /proc/$$/fd
+total 0
+lrwx------ 1 arunabho95 arunabho95 64 Jun 22 04:59 0 -> /dev/pts/2
+lrwx------ 1 arunabho95 arunabho95 64 Jun 22 04:59 1 -> /dev/pts/2
+lrwx------ 1 arunabho95 arunabho95 64 Jun 22 04:59 2 -> /dev/pts/2
+lrwx------ 1 arunabho95 arunabho95 64 Jun 22 04:59 255 -> /dev/pts/2
+Explanation: Lists the file descriptors of the current shell: FD 0=stdin, 1=stdout, 2=stderr, all pointing to the 
+  terminal. Apps open further FDs for their logs.
+
+
+$ echo "Application started successfully" > app.log
+Explanation: Redirects standard output (FD 1) into app.log instead of the screen.
+
+
+$ cat app.log
+Application started successfully
+Explanation: Confirms the normal message was written to the log file.
+
+
+$ ls /nonexistent_directory 2> error.log
+Explanation: 2> redirects ONLY standard error (FD 2) into error.log, separating errors from normal output.
+
+
+$ cat error.log
+ls: cannot access '/nonexistent_directory': No such file or directory
+Explanation: Shows the captured error message that went to the file, not the screen.
+
+
+$ ls /etc /nonexistent_dir > combined.log 2>&1
+Explanation: Sends stdout to combined.log, then points stderr to the same place (2>&1), capturing BOTH streams in one 
+  file.
+
+
+$ cat combined.log
+ls: cannot access '/nonexistent_dir': No such file or directory
+/etc:
+adduser.conf
+alternatives
+apache2
+apparmor
+apparmor.d
+apt
+bash.bashrc
+bash_completion
+bash_completion.d
+bindresvport.blacklist
+binfmt.d
+ca-certificates
+ca-certificates.conf
+cloud
+containerd
+credstore
+credstore.encrypted
+cron.d
+cron.daily
+cron.hourly
+cron.monthly
+crontab
+cron.weekly
+cron.yearly
+dbus-1
+dconf
+debconf.conf
+debian_version
+debuginfod
+default
+deluser.conf
+depmod.d
+dhcpcd.conf
+docker
+dotnet
+dpkg
+e2scrub.conf
+emacs
+environment
+ethertypes
+fonts
+fstab
+fuse.conf
+gai.conf
+gdb
+gemini-cli
+gitconfig
+gnutls
+gprofng.rc
+groff
+group
+group-
+gshadow
+gshadow-
+gss
+gtk-2.0
+gtk-3.0
+host.conf
+hostname
+hosts
+hosts.allow
+hosts.deny
+init.d
+initramfs-tools
+inputrc
+iproute2
+issue
+issue.net
+java-17-openjdk
+java-21-openjdk
+kernel
+ld.so.cache
+ld.so.conf
+ld.so.conf.d
+legal
+libaudit.conf
+libnl-3
+locale.alias
+locale.conf
+locale.gen
+localtime
+logcheck
+login.defs
+logrotate.d
+lsb-release
+lxc
+lynx
+machine-id
+magic
+magic.mime
+manpath.config
+mc
+mercurial
+mime.types
+mke2fs.conf
+modprobe.d
+modules
+modules-load.d
+motd
+mtab
+mysql
+nanorc
+netconfig
+networks
+nftables.conf
+nsswitch.conf
+opt
+os-release
+PackageKit
+pam.conf
+pam.d
+passwd
+passwd-
+perl
+php
+pip.conf
+polkit-1
+postgresql
+postgresql-common
+profile
+profile.d
+protocols
+pulse
+python3
+python3.12
+rc0.d
+rc1.d
+rc2.d
+rc3.d
+rc4.d
+rc5.d
+rc6.d
+rcS.d
+redis
+resolv.conf
+rmt
+rpc
+rsyslog.conf
+rsyslog.d
+security
+selinux
+sensors3.conf
+sensors.d
+services
+sgml
+shadow
+shadow-
+shells
+skel
+ssh
+ssl
+subgid
+subgid-
+subuid
+subuid-
+sudo.conf
+sudoers
+sudoers.d
+sudo_logsrvd.conf
+supercat
+supervisor
+sysctl.conf
+sysctl.d
+systemd
+terminfo
+timezone
+tmpfiles.d
+tmux.conf
+ucf.conf
+udev
+ufw
+update-motd.d
+vconsole.conf
+vim
+vulkan
+wgetrc
+X11
+xattr.conf
+xdg
+xml
+Explanation: Confirms both normal output and the error were captured together.
+
+
+$ ulimit -a
+real-time non-blocking time  (microseconds, -R) unlimited
+core file size              (blocks, -c) unlimited
+data seg size               (kbytes, -d) unlimited
+scheduling priority                 (-e) 0
+file size                   (blocks, -f) unlimited
+pending signals                     (-i) 63746
+max locked memory           (kbytes, -l) 8192
+max memory size             (kbytes, -m) unlimited
+open files                          (-n) 1024
+pipe size                (512 bytes, -p) 8
+POSIX message queues         (bytes, -q) 819200
+real-time priority                  (-r) 0
+stack size                  (kbytes, -s) 8192
+cpu time                   (seconds, -t) unlimited
+max user processes                  (-u) unlimited
+virtual memory              (kbytes, -v) unlimited
+file locks                          (-x) unlimited
+Explanation: Shows per-process resource limits; 'open files (-n)' is the max number of file descriptors - exceeding it 
+  causes 'Too many open files' errors.
+
+
+$ ulimit -n
+1024
+Explanation: Shows just the current soft limit on open file descriptors.
+
+
+HOW LINUX MANAGES FILE I/O:
+Everything is a file; processes use integer file descriptors managed by the kernel.
+Every process inherits stdin(0), stdout(1), stderr(2), which can be redirected independently.
+The kernel tracks open files per process (lsof, /proc/PID/fd) and enforces limits (ulimit).
+Logging issues often come from redirection mistakes, stale open files, or hitting the FD limit.
