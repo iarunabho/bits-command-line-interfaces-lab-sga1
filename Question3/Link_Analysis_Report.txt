@@ -1,0 +1,66 @@
+==================================================
+QUESTION 3 - FILE SYSTEM AND LINK ANALYSIS
+==================================================
+
+$ echo "This is the original file for the link analysis experiment." > original.txt
+Explanation: Creates the original regular file, which owns one inode.
+
+
+$ ln original.txt hardlink.txt
+Explanation: Creates a hard link - a second name pointing to the SAME inode as the original.
+
+
+$ ln -s original.txt symlink.txt
+Explanation: Creates a symbolic link - a small separate file that stores the PATH to original.txt.
+
+
+$ ls -li
+total 12
+131430 -rw-rw-r-- 2 arunabho95 arunabho95  60 Jun 22 05:58 hardlink.txt
+131401 -rw-rw-r-- 1 arunabho95 arunabho95 571 Jun 22 05:58 Link_Analysis_Report.txt
+131430 -rw-rw-r-- 2 arunabho95 arunabho95  60 Jun 22 05:58 original.txt
+131442 lrwxrwxrwx 1 arunabho95 arunabho95  12 Jun 22 05:58 symlink.txt -> original.txt
+Explanation: Inode numbers: original.txt and hardlink.txt share the SAME inode with link count 2; symlink.txt has a 
+  DIFFERENT inode and points to original.txt.
+
+
+$ stat original.txt
+  File: original.txt
+  Size: 60        	Blocks: 8          IO Block: 4096   regular file
+Device: 8,17	Inode: 131430      Links: 2
+Access: (0664/-rw-rw-r--)  Uid: ( 1000/arunabho95)   Gid: ( 1000/arunabho95)
+Access: 2026-06-22 05:58:18.684916065 +0000
+Modify: 2026-06-22 05:58:18.684916065 +0000
+Change: 2026-06-22 05:58:18.700917244 +0000
+ Birth: 2026-06-22 05:58:18.684916065 +0000
+Explanation: Confirms the inode number and 'Links: 2' (two names referencing one inode).
+
+
+$ rm original.txt
+Explanation: Deletes the original filename.
+
+
+$ ls -li
+total 8
+131430 -rw-rw-r-- 1 arunabho95 arunabho95   60 Jun 22 05:58 hardlink.txt
+131401 -rw-rw-r-- 1 arunabho95 arunabho95 1627 Jun 22 05:58 Link_Analysis_Report.txt
+131442 lrwxrwxrwx 1 arunabho95 arunabho95   12 Jun 22 05:58 symlink.txt -> original.txt
+Explanation: After deletion: hardlink.txt link count drops to 1 but its inode and data survive; symlink.txt still exists 
+  but now points to a missing target.
+
+
+$ cat hardlink.txt
+This is the original file for the link analysis experiment.
+Explanation: The hard link STILL works - the inode and data are freed only when the link count reaches 0.
+
+
+$ cat symlink.txt
+cat: symlink.txt: No such file or directory
+Explanation: The symbolic link is now BROKEN (dangling) because its target path no longer exists.
+
+
+CONCLUSIONS:
+1. A hard link shares the original's inode and data; deleting one name does not destroy
+   the data while other hard links remain (link count > 0).
+2. A symbolic link is a separate file holding a path; it breaks if the target is deleted/moved.
+3. Hard links cannot cross filesystems or link directories; symbolic links can do both.
