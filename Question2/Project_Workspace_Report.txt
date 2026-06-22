@@ -1,0 +1,72 @@
+==================================================
+QUESTION 2 - SECURE PROJECT WORKSPACE SETUP
+==================================================
+
+$ mkdir -p project_workspace/docs project_workspace/src project_workspace/config
+Explanation: Creates the workspace with three sub-directories (docs, src, config) in one step using -p.
+
+
+$ ls -lR project_workspace
+project_workspace:
+total 12
+drwxrwxr-x 2 arunabho95 arunabho95 4096 Jun 22 05:41 config
+drwxrwxr-x 2 arunabho95 arunabho95 4096 Jun 22 05:41 docs
+drwxrwxr-x 2 arunabho95 arunabho95 4096 Jun 22 05:41 src
+
+project_workspace/config:
+total 0
+
+project_workspace/docs:
+total 0
+
+project_workspace/src:
+total 0
+Explanation: Recursively lists the new directory structure to confirm all sub-directories were created.
+
+
+$ echo "Confidential project plan" > project_workspace/docs/plan.txt
+Explanation: Creates a sensitive project file using output redirection (>).
+
+
+$ ls -l project_workspace/docs/plan.txt
+-rw-rw-r-- 1 arunabho95 arunabho95 26 Jun 22 05:41 project_workspace/docs/plan.txt
+Explanation: Permissions BEFORE modification: default 664 (rw-rw-r--) means group members can read AND write, and others 
+  can read, the confidential file.
+
+
+$ umask
+0002
+Explanation: Shows the umask (here 0002), subtracted from base permissions: 666-002=664 for files, which is why new files
+  default to rw-rw-r--.
+
+
+$ chmod 600 project_workspace/docs/plan.txt
+Explanation: Restricts the file to owner-only read/write (rw-------), removing all group/other access.
+
+
+$ chmod 700 project_workspace
+Explanation: Restricts the workspace directory to owner-only (rwx------), so no other user can list or enter it.
+
+
+$ ls -l project_workspace/docs/plan.txt
+-rw------- 1 arunabho95 arunabho95 26 Jun 22 05:41 project_workspace/docs/plan.txt
+Explanation: Permissions AFTER modification: rw------- confirms only the owner can now access the file.
+
+
+$ stat project_workspace/docs/plan.txt
+  File: project_workspace/docs/plan.txt
+  Size: 26        	Blocks: 8          IO Block: 4096   regular file
+Device: 8,17	Inode: 131414      Links: 1
+Access: (0600/-rw-------)  Uid: ( 1000/arunabho95)   Gid: ( 1000/arunabho95)
+Access: 2026-06-22 05:41:47.546836518 +0000
+Modify: 2026-06-22 05:41:47.546836518 +0000
+Change: 2026-06-22 05:41:47.586839467 +0000
+ Birth: 2026-06-22 05:41:47.546836518 +0000
+Explanation: Displays full metadata including the numeric mode (0600) and ownership (Uid/Gid).
+
+
+HOW PERMISSIONS PROTECT PROJECT DATA:
+Linux permissions control read(r)/write(w)/execute(x) for three classes: owner, group, others.
+Setting plan.txt to 600 and the workspace to 700 ensures only the owner can access the
+confidential data, blocking all other users on the shared system. A strict umask enforces
+these protections automatically for future files.
