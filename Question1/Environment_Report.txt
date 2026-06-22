@@ -1,0 +1,53 @@
+==================================================
+QUESTION 1 - LINUX ENVIRONMENT VERIFICATION
+==================================================
+
+$ whoami
+arunabho95
+Explanation: Prints my current logged-in username, confirming which account I am 
+  operating under.
+
+
+$ id
+uid=1000(arunabho95) gid=1000(arunabho95) groups=1000(arunabho95),4(adm),27(sudo),996(docker)
+Explanation: Shows my numeric UID, primary group GID and all supplementary groups (my
+  privileges).
+
+
+$ groups
+arunabho95 adm sudo docker
+Explanation: Lists the group names my account belongs to.
+
+
+$ echo $SHELL
+/bin/bash
+Explanation: Shows the path to my login shell, confirming I am using bash.
+
+
+$ pwd
+/home/arunabho95/bits-command-line-interfaces-lab-sga1/Question1
+Explanation: Prints my current working directory as an absolute path.
+
+
+$ ls -la
+total 12
+drwxrwxr-x 2 arunabho95 arunabho95 4096 Jun 22 05:08 .
+drwxrwxr-x 8 arunabho95 arunabho95 4096 Jun 22 05:06 ..
+-rw-rw-r-- 1 arunabho95 arunabho95  821 Jun 22 05:08 Environment_Report.txt
+Explanation: Lists all files including hidden dotfiles, in long format with 
+  permissions, owner and size.
+
+
+$ ping -c 4 google.com
+PING google.com (108.177.97.100) 56(84) bytes of data.
+64 bytes from tm-in-f100.1e100.net (108.177.97.100): icmp_seq=1 ttl=114 time=0.695 ms
+64 bytes from tm-in-f100.1e100.net (108.177.97.100): icmp_seq=2 ttl=114 time=0.449 ms
+64 bytes from tm-in-f100.1e100.net (108.177.97.100): icmp_seq=3 ttl=114 time=0.475 ms
+64 bytes from tm-in-f100.1e100.net (108.177.97.100): icmp_seq=4 ttl=114 time=0.472 ms
+
+--- google.com ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 3053ms
+rtt min/avg/max/mdev = 0.449/0.522/0.695/0.099 ms
+Explanation: Sends 4 ICMP packets; replies with 0% packet loss confirm working 
+  network connectivity and DNS.
+
