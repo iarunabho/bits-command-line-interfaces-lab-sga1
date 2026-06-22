@@ -1,0 +1,86 @@
+==================================================
+QUESTION 5 - STORAGE HEALTH ASSESSMENT
+==================================================
+
+$ lsblk
+NAME    MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+sda       8:0    0  100G  0 disk 
+├─sda1    8:1    0 95.8G  0 part /run/google/devshell
+│                                /var/lib/docker
+│                                /etc/ssh/keys
+│                                /var/config/tmux
+│                                /etc/resolv.conf
+│                                /etc/hostname
+│                                /etc/hosts
+│                                /root
+├─sda2    8:2    0   16M  0 part 
+├─sda3    8:3    0    2G  0 part 
+├─sda4    8:4    0   16M  0 part 
+├─sda5    8:5    0    2G  0 part 
+├─sda6    8:6    0  512B  0 part 
+├─sda7    8:7    0  512B  0 part 
+├─sda8    8:8    0   16M  0 part 
+├─sda9    8:9    0  512B  0 part 
+├─sda10   8:10   0  512B  0 part 
+├─sda11   8:11   0    8M  0 part 
+└─sda12   8:12   0   32M  0 part 
+sdb       8:16   0    5G  0 disk 
+└─sdb1    8:17   0    5G  0 part /home
+Explanation: Lists all block storage devices in a tree with their sizes and mount points - inventories the physical 
+  storage.
+
+
+$ mount | column -t | head -n 12
+overlay                            on  /                     type  overlay     (rw,relatime,lowerdir=213/fs:212/fs:211/fs:208/fs:207/fs:204/fs:203/fs:200/fs:198/fs:197/fs:196/fs:192/fs:190/fs:188/fs:186/fs:184/fs:182/fs:181/fs:180/fs:179/fs:178/fs:177/fs:176/fs:172/fs:166/fs:164/fs:163/fs:159/fs:158/fs:155/fs:153/fs:146/fs:145/fs:141/fs:140/fs:139/fs:136/fs:135/fs:132/fs:131/fs:129/fs:127/fs:125/fs:122/fs:121/fs:111/fs:110/fs:109/fs:108/fs:106/fs:105/fs:104/fs:103/fs:102/fs:97/fs:96/fs:95/fs:94/fs:93/fs:90/fs:88/fs:84/fs:83/fs:82/fs:80/fs:78/fs:77/fs:76/fs:73/fs:71/fs:69/fs:67/fs:65/fs:63/fs:6/fs,upperdir=/var/lib/containerd/io.containerd.snapshotter.v1.gcfs/snapshotter/snapshots/311/fs,workdir=/var/lib/containerd/io.containerd.snapshotter.v1.gcfs/snapshotter/snapshots/311/work)
+proc                               on  /proc                 type  proc        (rw,nosuid,nodev,noexec,relatime)
+tmpfs                              on  /dev                  type  tmpfs       (rw,nosuid,size=65536k,mode=755)
+devpts                             on  /dev/pts              type  devpts      (rw,nosuid,noexec,relatime,gid=5,mode=620,ptmxmode=666)
+mqueue                             on  /dev/mqueue           type  mqueue      (rw,nosuid,nodev,noexec,relatime)
+sysfs                              on  /sys                  type  sysfs       (ro,nosuid,nodev,noexec,relatime)
+cgroup                             on  /sys/fs/cgroup        type  cgroup2     (rw,nosuid,nodev,noexec,relatime)
+/dev/sda1                          on  /root                 type  ext4        (rw,relatime,commit=30)
+/dev/disk/by-id/google-home-part1  on  /home                 type  ext4        (rw,noatime,journal_checksum,errors=remount-ro,data=ordered)
+/dev/sda1                          on  /etc/hosts            type  ext4        (rw,relatime,commit=30)
+/dev/sda1                          on  /etc/hostname         type  ext4        (rw,relatime,commit=30)
+/dev/sda1                          on  /etc/resolv.conf      type  ext4        (rw,relatime,commit=30)
+Explanation: Shows mounted filesystems with their device, mount point, type and options (rw = read/write).
+
+
+$ df -h
+Filesystem                         Size  Used Avail Use% Mounted on
+overlay                             95G   71G   24G  76% /
+tmpfs                               64M     0   64M   0% /dev
+/dev/sda1                           95G   71G   24G  76% /root
+/dev/disk/by-id/google-home-part1  4.8G  127M  4.4G   3% /home
+shm                                 64M     0   64M   0% /dev/shm
+Explanation: Reports disk space per filesystem in human-readable units; the Use% column is the key health metric.
+
+
+$ sudo du -sh /var/log
+1.4M	/var/log
+Explanation: Summarizes the total size of /var/log to see how much space logs consume.
+
+
+$ df -i
+Filesystem                         Inodes   IUsed   IFree IUse% Mounted on
+overlay                           6258720 1347457 4911263   22% /
+tmpfs                             2047855     175 2047680    1% /dev
+/dev/sda1                         6258720 1347457 4911263   22% /root
+/dev/disk/by-id/google-home-part1  327680     444  327236    1% /home
+shm                               2047855       1 2047854    1% /dev/shm
+Explanation: Reports INODE usage; a filesystem can run out of inodes even with free space, blocking new file creation.
+
+STORAGE HEALTH OBSERVATION:
+ - Root filesystem (/) is 76% used (71G of 95G) with 24G free. This is moderate usage
+    approaching the 80% alert threshold, so it should be monitored.
+ - Inode usage on / is only 22%, so there is no risk of inode exhaustion.
+ - /var/log currently uses just 1.4M; log growth should be monitored after deployment.
+ - /home is only 3% used (4.4G free) with 1% inode usage - plenty of spare capacity.
+
+RECOMMENDATIONS FOR IMPROVING STORAGE UTILIZATION:
+ 1. Configure logrotate to cap /var/log growth before it becomes a problem.
+ 2. Put /var or application data on a separate partition/disk so it cannot fill root.
+ 3. Set up monitoring/alerts when df Use% exceeds 80% (root is already at 76%).
+ 4. Use LVM so storage can be extended online when the application needs more space.
+ 5. Periodically clean temporary files and old logs to reclaim space.
+
